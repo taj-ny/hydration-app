@@ -13,6 +13,8 @@ import java.util.List;
 
 public class Database {
     private List<HydrationEntry> entries = new ArrayList<>();
+    private int goal = 2000;
+
     private transient Path path;
 
     public static Database load(Path path) throws IOException {
@@ -33,5 +35,9 @@ public class Database {
 
     public List<HydrationEntry> getEntries() {
         return entries;
+    }
+
+    public int getGoal() {
+        return goal;
     }
 }

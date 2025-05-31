@@ -23,6 +23,7 @@
             app:indicatorSize="340dp"
             app:trackThickness="16dp"
             app:indicatorColor="#1d7eef"
+            android:id="@+id/hydrationGoalIndicator"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_centerVertical="true"
@@ -38,12 +39,14 @@
             android:orientation="vertical">
 
             <TextView
+                android:id="@+id/hydrationPercentageText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:fontFamily="arial"
                 android:textSize="30dp"
                 android:text="25%" />
             <TextView
+                android:id="@+id/hydrationCurrentText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:fontFamily="arial"
@@ -51,6 +54,7 @@
                 android:textFontWeight="600"
                 android:text="500 ml" />
             <TextView
+                android:id="@+id/hydrationRemainingText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:fontFamily="arial"

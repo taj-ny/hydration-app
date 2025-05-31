@@ -3,6 +3,7 @@ package com.example.hydration;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
+import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
@@ -15,10 +16,13 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.hydration.data.Database;
 import com.example.hydration.data.HydrationEntry;
+import com.google.android.material.progressindicator.CircularProgressIndicator;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -60,15 +64,32 @@ public class MainActivity extends AppCompatActivity {
 
         entries.clear();
         entries.add(new HydrationEntry(1748664000000L, "Woda", 250));
-        entries.add(new HydrationEntry(1748671980000L, "Woda", 257));
-        entries.add(new HydrationEntry(1748674620000L, "Woda", 252));
-        for (int i = 0; i < 100; i++) {
-            entries.add(new HydrationEntry(1748728740000L, "Woda", 249));
+        entries.add(new HydrationEntry(1748671980000L, "Woda", 500));
+        entries.add(new HydrationEntry(1748674620000L, "Sok jabłkowy", 500));
+//        entries.add(new HydrationEntry(1748674620000L, "Woda", 2490));
+
+        List<HydrationEntry> todayEntries = new ArrayList<>();
+        int hydrationAmountTotal = 0;
+        int dayMilliseconds = 1000 * 60 * 60 * 24;
+        for (HydrationEntry entry : entries) {
+            if (System.currentTimeMillis() / dayMilliseconds != entry.getTimestamp() / dayMilliseconds) {
+                // Not today
+                continue;
+            }
+
+            hydrationAmountTotal += entry.getAmount();
+            todayEntries.add(entry);
         }
+
+        int hydrationPercentage = Math.round(hydrationAmountTotal / (float)db.getGoal() * 100);
+        ((CircularProgressIndicator) findViewById(R.id.hydrationGoalIndicator)).setProgress(hydrationPercentage);
+        ((TextView) findViewById(R.id.hydrationPercentageText)).setText(String.format("%d%%", hydrationPercentage));
+        ((TextView) findViewById(R.id.hydrationCurrentText)).setText(String.format("%d ml", hydrationAmountTotal));
+        ((TextView) findViewById(R.id.hydrationRemainingText)).setText(String.format("- %d ml", Math.max(0, db.getGoal() - hydrationAmountTotal)));
 
         RecyclerView recyclerView = findViewById(R.id.entries);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        recyclerView.setAdapter(new HydrationEntryRecyclerViewAdapter(this, db.getEntries()));
+        recyclerView.setAdapter(new HydrationEntryRecyclerViewAdapter(this, todayEntries));
         recyclerView.setNestedScrollingEnabled(false);
     }
 }
