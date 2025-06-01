@@ -7,6 +7,8 @@ import android.view.MenuItem;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.hydration.data.Database;
+import com.example.hydration.data.HydrationEntry;
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.components.LimitLine;
 import com.github.mikephil.charting.components.XAxis;
@@ -21,6 +23,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Locale;
 
 public class historyActivity extends AppCompatActivity {
@@ -57,7 +60,6 @@ public class historyActivity extends AppCompatActivity {
 
     private void setupBarChart() {
         ArrayList<BarEntry> entries = new ArrayList<>();
-        float[] hydrationValues = {500, 1200, 800, 1500, 600, 2000, 1000};
         ArrayList<String> labels = new ArrayList<>();
 
         Calendar calendar = Calendar.getInstance();
@@ -65,8 +67,15 @@ public class historyActivity extends AppCompatActivity {
 
         SimpleDateFormat sdf = new SimpleDateFormat("dd.MM", Locale.getDefault());
 
+        Database database = Database.instance();
         for (int i = 0; i < 7; i++) {
-            entries.add(new BarEntry(i, hydrationValues[i]));
+            int sum = 0;
+            List<HydrationEntry> hydrationEntries = database.getEntriesForDay(calendar);
+            for (HydrationEntry entry : hydrationEntries) {
+                sum += entry.getAmount();
+            }
+
+            entries.add(new BarEntry(i, sum));
             labels.add(sdf.format(calendar.getTime()));
             calendar.add(Calendar.DAY_OF_YEAR, 1);
         }

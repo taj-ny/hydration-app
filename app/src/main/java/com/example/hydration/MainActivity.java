@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -57,28 +58,25 @@ public class MainActivity extends AppCompatActivity {
         List<HydrationEntry> entries = null;
         try {
             Path databasePath = Paths.get(getFilesDir().getPath(), "database.json");
-            db = Database.load(databasePath);
+            Database.load(databasePath);
+            db = Database.instance();
             entries = db.getEntries();
         } catch (IOException e) {
         }
 
         entries.clear();
-        entries.add(new HydrationEntry(1748664000000L, "Woda", 250));
-        entries.add(new HydrationEntry(1748671980000L, "Woda", 500));
-        entries.add(new HydrationEntry(1748674620000L, "Sok jabłkowy", 500));
+        entries.add(new HydrationEntry(1748764200000L, "Woda", 500));
+        entries.add(new HydrationEntry(1748764200000L, "Woda", 600));
+        entries.add(new HydrationEntry(1748764200000L, "Sok jabłkowy", 700));
+        entries.add(new HydrationEntry(1748584200000L, "Woda", 250));
+        entries.add(new HydrationEntry(1748670600000L, "Woda", 500));
+        entries.add(new HydrationEntry(1748670600000L, "Sok jabłkowy", 500));
 //        entries.add(new HydrationEntry(1748674620000L, "Woda", 2490));
 
-        List<HydrationEntry> todayEntries = new ArrayList<>();
+        List<HydrationEntry> todayEntries = db.getEntriesForDay(Calendar.getInstance());
         int hydrationAmountTotal = 0;
-        int dayMilliseconds = 1000 * 60 * 60 * 24;
-        for (HydrationEntry entry : entries) {
-            if (System.currentTimeMillis() / dayMilliseconds != entry.getTimestamp() / dayMilliseconds) {
-                // Not today
-                continue;
-            }
-
+        for (HydrationEntry entry : todayEntries) {
             hydrationAmountTotal += entry.getAmount();
-            todayEntries.add(entry);
         }
 
         int hydrationPercentage = Math.round(hydrationAmountTotal / (float)db.getGoal() * 100);

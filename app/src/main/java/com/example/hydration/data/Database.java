@@ -9,6 +9,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 public class Database {
@@ -16,16 +17,20 @@ public class Database {
     private int goal = 2000;
 
     private transient Path path;
+    private static Database instance = new Database();
 
-    public static Database load(Path path) throws IOException {
-        Database database = new Database();
+    public static void load(Path path) throws IOException {
+        instance = new Database();
         if (Files.exists(path)) {
             String raw = new String(Files.readAllBytes(path), StandardCharsets.UTF_8);
             Gson gson = new Gson();
-            database = gson.fromJson(JsonParser.parseString(raw), Database.class);
+            instance = gson.fromJson(JsonParser.parseString(raw), Database.class);
         }
-        database.path = path;
-        return database;
+        instance.path = path;
+    }
+
+    public static Database instance() {
+        return instance;
     }
 
     public void save() throws IOException {
@@ -35,6 +40,17 @@ public class Database {
 
     public List<HydrationEntry> getEntries() {
         return entries;
+    }
+    public List<HydrationEntry> getEntriesForDay(Calendar calendar) {
+        List<HydrationEntry> result = new ArrayList<>();
+        long dayInMilliseconds = 1000 * 60 * 60 * 24;
+        for (HydrationEntry entry : entries) {
+            if (calendar.getTimeInMillis() / dayInMilliseconds != entry.getTimestamp() / dayInMilliseconds) {
+                continue;
+            }
+            result.add(entry);
+        }
+        return result;
     }
 
     public int getGoal() {
