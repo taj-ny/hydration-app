@@ -1,9 +1,14 @@
 package com.example.hydration;
 
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.TimePicker;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
@@ -29,7 +34,6 @@ import java.util.List;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class MainActivity extends AppCompatActivity {
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -64,14 +68,15 @@ public class MainActivity extends AppCompatActivity {
         } catch (IOException e) {
         }
 
-        entries.clear();
-        entries.add(new HydrationEntry(1748764200000L, "Woda", 500));
-        entries.add(new HydrationEntry(1748764200000L, "Woda", 600));
-        entries.add(new HydrationEntry(1748764200000L, "Sok jabłkowy", 700));
-        entries.add(new HydrationEntry(1748584200000L, "Woda", 250));
-        entries.add(new HydrationEntry(1748670600000L, "Woda", 500));
-        entries.add(new HydrationEntry(1748670600000L, "Sok jabłkowy", 500));
-//        entries.add(new HydrationEntry(1748674620000L, "Woda", 2490));
+        if (entries.isEmpty()) {
+            entries.add(new HydrationEntry(1758289582000L, "Woda", 250));
+            entries.add(new HydrationEntry(1758289582000L, "Woda", 500));
+            entries.add(new HydrationEntry(1758289582000L, "Woda", 500));
+            entries.add(new HydrationEntry(1758289582000L, "Woda", 250));
+            try {
+                db.save();
+            } catch (IOException e){}
+        }
 
         List<HydrationEntry> todayEntries = db.getEntriesForDay(Calendar.getInstance());
         int hydrationAmountTotal = 0;
@@ -89,5 +94,38 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(new HydrationEntryRecyclerViewAdapter(this, todayEntries));
         recyclerView.setNestedScrollingEnabled(false);
+    }
+
+    public void dodaj(View view) {
+        LayoutInflater inflater = LayoutInflater.from(this);
+        View dialogView = inflater.inflate(R.layout.addentry, null);
+
+        TimePicker timePicker = dialogView.findViewById(R.id.time);
+        EditText amount = dialogView.findViewById(R.id.amount);
+        EditText type = dialogView.findViewById(R.id.type);
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Dodaj")
+            .setView(dialogView)
+            .setPositiveButton("Dodaj", (dialog, which) -> {
+                Calendar calendar = Calendar.getInstance();
+                calendar.set(Calendar.HOUR_OF_DAY, timePicker.getHour());
+                calendar.set(Calendar.MINUTE, timePicker.getMinute());
+                calendar.set(Calendar.SECOND, 0);
+                calendar.set(Calendar.MILLISECOND, 0);
+
+                Database db = Database.instance();
+                db.getEntries().add(new HydrationEntry(calendar.getTimeInMillis(), type.getText().toString(), Integer.parseInt(amount.getText().toString())));
+                try {
+                    db.save();
+                } catch (IOException e) {
+                }
+
+                Intent intent = new Intent(MainActivity.this, MainActivity.class);
+                startActivity(intent);
+            })
+            .setNegativeButton("Anuluj", null)
+            .show();
+
     }
 }
